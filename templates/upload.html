@@ -1,0 +1,25 @@
+{% extends "main.html" %}
+
+{% block content %}
+ <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- <title>COVID 19 Dectection</title >> -->
+  </head
+<form  enctype="multipart/form-data" method="POST">
+  <br>
+  <br>
+  <br>
+   <input type="file" name="pic" />
+   <br>
+   <label for="bday">patient name:</label>
+   <input type="text" name="patient_name" />
+   <br>
+   <label for="bday">patient  birthday:</label>
+   <input type="date" name="birthday" value="1911-01-01" />
+   <br> 
+   <input type="submit" value="Store the file"/>
+</form>
+{% endblock %}

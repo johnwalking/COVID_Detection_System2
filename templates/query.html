@@ -1,0 +1,27 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- <title>COVID 19 Dectection</title >> -->
+  </head>
+     <br>
+     <br> 
+     <form method=post enctype="multipart/form-data">
+       <h1> Input Patient Name</h1>
+      	<input type= "text" name ="patient_name"  class="form-control"> 
+      <button type="submit">Query</button>
+      <br>
+      {% if image %}
+        <img  src="static/displayDB/{{image}}"   width="250" height="250">
+        <h3>name:{{name}}</h3>
+        <h3>birthday:{{birthday}}</h3>
+      {% endif %}
+    </form>
+{% endblock %}

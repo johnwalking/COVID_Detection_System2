@@ -1,8 +1,8 @@
 import os
-import numpy as np
+import io
+import time
 import tensorflow as tf
-from tensorflow import keras
-# Display
+from tensorflow import keras 
 from IPython.display import Image, display
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -11,8 +11,6 @@ from numpy.lib.type_check import imag
 from keras.models import load_model
 import cv2
 import numpy as np
-import tensorflow as tf
-from flask import Flask
 from flask import request
 from flask import render_template
 from tensorflow.keras.models import Model, Sequential
@@ -22,7 +20,11 @@ from keras.applications import imagenet_utils
 from keras.applications.resnet50 import ResNet50, preprocess_input
 from matplotlib import pyplot as plt
 from tensorflow.python.client import device_lib
-
+from datetime import datetime
+from flask import Flask, request, Response
+from werkzeug.utils import secure_filename
+from db import db_init, db
+from models import Img
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -30,7 +32,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 app = Flask(__name__)
 UPLOAD_FOLDER = "/Users/wangweizhong/Desktop/Medical_Treatment_System/static"
 DEVICE = "cuda"
-MODEL = None 
+MODEL = None
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///img.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db_init(app)
+
 labels = {0: "COVID19", 1:"NORMAL"}
 
 
@@ -132,7 +139,7 @@ def showModelDetial(img_path, file_name ):
 	# return new_loc
 	
 	
-@app.route("/", methods=["GET","POST"])
+@app.route("/predict", methods=["GET","POST"])
 def upload_predictions():
 	if request.method=="POST":
 		image_file = request.files["image"]
@@ -143,9 +150,69 @@ def upload_predictions():
 			print(pred)
 			print(image_location, image_file.filename)
 			showModelDetial(image_location,image_file.filename )	
-			return render_template("index.html", prediction=round(pred, 4), image_loc=image_file.filename)
+			return render_template("predict.html", prediction=round(pred, 4), image_loc=image_file.filename)
 			# return render_template("index.html", prediction=round(pred,4), image_loc= image_file.filename) 
-	return render_template("index.html", prediction=0, image_loc =None)
+	return render_template("predict.html", prediction=0, image_loc =None)
+
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+	if request.method == "POST":
+		pic = request.files['pic']
+		if not pic:
+			return 'No pic uploaded!', 400
+		filename = secure_filename(pic.filename)
+		mimetype = pic.mimetype
+		if not filename or not mimetype:
+			return 'Bad upload!', 400
+		#parameter  = request.form['input name']
+		name = request.form['patient_name']
+		birthday = request.form['birthday']
+		print(name)
+		print(birthday)
+		img = Img(img=pic.read(), name=name, mimetype=mimetype, birthday=birthday)
+		db.session.add(img)
+		db.session.commit()
+	return render_template("upload.html")
+	
+@app.route("/", methods=["GET","POST"])
+def mainPage():
+	return render_template("main.html")
+	
+
+@app.route("/query", methods=["GET", "POST"])
+def query():	
+	if request.method == "POST":
+		
+		name = request.form['patient_name']
+		img = Img.query.filter_by(name = name).first()
+		#有這位病患
+		try:
+			image = img.img
+			# print(img.img)
+		except:
+		#病患不存在 傳回錯誤
+			image= None
+			return 'Patient  Not Found!', 40
+		#讀取byte64結構，存成圖片並傳入地址
+		nparr = np.fromstring(img.img, np.uint8)
+		image = cv2.imdecode(nparr, cv2.IMREAD_ANYCOLOR)
+		now = datetime.now().timestamp()
+		cv2.imwrite('./static/displayDB/temp'+str(now)+'.png', image)
+		time.sleep(2)
+		# print(image='temp.png', name=img.name, birthday=img.birthday)
+		return render_template("query.html", image='temp'+str(now)+'.png', name=img.name, birthday=img.birthday)
+	return render_template("query.html", image= None )
+
+@app.route('/<int:id>')
+def get_img(id):
+    img = Img.query.filter_by(id=id).first()
+    if not img:
+        return 'Img Not Found!', 404
+
+    return Response(img.img, mimetype=img.mimetype)
+    
 
 if __name__ == "__main__":
 	MODEL = Model().returnModel()
