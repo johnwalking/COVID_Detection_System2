@@ -6,10 +6,16 @@
 
 網頁圖：
 1. COVID 19 檢測
+
+
 ![image](https://github.com/johnwalking/COVID_Detection_System2/blob/main/截圖%202021-06-26%20下午4.59.42.png)
 
 2. 上傳
+
+
 ![image](https://github.com/johnwalking/COVID_Detection_System2/blob/main/截圖%202021-06-26%20下午5.00.02.png)
 
 3.查詢
+
+
 ![image](https://github.com/johnwalking/COVID_Detection_System2/blob/main/截圖%202021-06-26%20下午5.00.19.png)
